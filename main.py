@@ -3,21 +3,12 @@ import requests
 import re
 from bs4 import MarkupResemblesLocatorWarning
 import warnings
+import time
+import random
 
 warnings.filterwarnings("ignore", category=MarkupResemblesLocatorWarning)
 
 url_to_scrape = "https://books.toscrape.com/"
-
-def getHTMLdocument(url):
-    response = requests.get(url)
-
-    # response will be provided in JSON format
-    return response.text
-
-
-html_document = getHTMLdocument(url_to_scrape)
-soup = BeautifulSoup(html_document, 'html.parser')
-
 
 links = [link for link in soup.find_all('a')]
 sub_urls = [url_to_scrape + link.get('href') for link in links if link.get('href') and "catalogue/category/books/" in link.get('href')]
@@ -43,6 +34,10 @@ def getPageRequest(urls: list[str]):
     webpages = {}  # Store HTML Parsed Info. Webpage : HTML Parse.
     for url in urls:
         response = requests.get(url)
+
+        # Add a delay before making requests
+        delay = random.uniform(1, 3)
+        time.sleep(delay)
 
         if response.status_code == 200:
             print(f"Response Success for {url}.")
