@@ -21,36 +21,48 @@ soup = BeautifulSoup(html_document, 'html.parser')
 
 links = [link for link in soup.find_all('a')]
 sub_urls = [url_to_scrape + link.get('href') for link in links if link.get('href') and "catalogue/category/books/" in link.get('href')]
-#len_of_prefix_url = len(sub_urls[0]) # 52nd index
 
-for sub_url in sub_urls:
-    print(sub_url)
+
+def mapWebpageToBooks(webpage_list: dict[str, BeautifulSoup]):
+    webpage_to_books = {}  # Webpage : List of books
+    for url, soup in webpage_list.items():
+        books = []
+        articles = soup.find_all("article", class_="product_pod")
+
+        for article in articles:
+            title_tag = article.find("h3").find("a")
+            book_title = title_tag.get("title")
+            books.append(book_title)
+
+        webpage_to_books[url] = books
+
+    return webpage_to_books
+
 
 def getPageRequest(urls: list[str]):
-    webpages = {} # Store HTML Parsed Info. Webpage : HTML Parse.
-    webpage_to_book = {} # Webpage : List of Books.
+    webpages = {}  # Store HTML Parsed Info. Webpage : HTML Parse.
     for url in urls:
         response = requests.get(url)
 
         if response.status_code == 200:
-            print("Response Success.")
+            print(f"Response Success for {url}.")
             # Parse HTML
             webpages[url] = BeautifulSoup(response.text, 'html.parser')
 
         if response.status_code == 404:
-            print("Response Failed.")
+            print(f"Response Failed for {url}.")
 
     return webpages
 
 
 
-# Select a few sub-URLs to test
 test_urls = sub_urls[:3]  # First 3 category pages
 
-# Call your function
 parsed_pages = getPageRequest(test_urls)
 
-# Print the title of each parsed page to verify
-for url, soup in parsed_pages.items():
-    print(f"\nTitle for {url}:")
-    print(soup.title.text.strip())
+webpage_to_books = mapWebpageToBooks(parsed_pages)
+
+for url, books in webpage_to_books.items():
+    print(f"\nBooks in category {url}:")
+    for book in books:
+        print(book)
