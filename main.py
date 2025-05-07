@@ -37,10 +37,16 @@ def mapWebpageToBooks(webpage_list: dict[str, BeautifulSoup]):
 
         # Convert Pounds to US Dollars
         for book, price in books.items():
-            sliced_price = price[1:]
-            converted_price = float(sliced_price) # We can now manipulate this float value.
-            pounds_to_dollars = c.convert(converted_price, 'EUR', 'USD')
-            books[book] = round(pounds_to_dollars, 2)
+            price_match = re.search(r"[\d.]+", price)
+            if price_match:
+                try:
+                    converted_price = float(price_match.group()) # We can now manipulate this float value.
+                    pounds_to_dollars = c.convert(converted_price, 'GBP', 'USD')
+                    books[book] = round(pounds_to_dollars, 2)
+                except Exception as e:
+                    books[book] = "Conversion failed"
+            else:
+                books[book] = "N/A"
 
     return webpage_to_books
 
